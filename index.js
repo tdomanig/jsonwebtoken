@@ -35,10 +35,7 @@ app.get('/profile',verifytoken,(request, response)=>{
 
   
 
-    const password=profiles.find(({password})=>password===request.password)
-
-    if(password==null) return response.sendStatus(401)
-    response.json(password)
+    response.json(request.email)
 })
 
 app.post('/authenticate',(request, response)=>{

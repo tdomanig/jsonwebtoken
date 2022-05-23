@@ -43,7 +43,7 @@ app.post('/authenticate',(request, response)=>{
     const{ email }=request.body
     const { password }=request.body
     
-    
+    console.log(email)
     const profile= profiles.find((p)=>p.email===email&&p.password===password)
     console.log(profile)
 
@@ -53,9 +53,8 @@ app.post('/authenticate',(request, response)=>{
     const accestoken= jwt.sign({email,password},'my-secret')
     response.json({accestoken})
 
-    const roles= profiles.find((r)=>r.role==="admin")
-    console.log(roles)
-    if(roles.role==="admin"){
+    
+    if(profile.role==="admin"){
         console.log("Administrator logged in")
         
     }else{console.log("user logged in")}

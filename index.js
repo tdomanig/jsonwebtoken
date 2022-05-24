@@ -1,3 +1,20 @@
+
+import { initializeApp } from "firebase/app";
+const { initializeApp}=require("firebase/app") 
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4Fq5XmjVIK5jJ5VVDs3RqBePLmLcSeeg",
+  authDomain: "coding-school-312d2.firebaseapp.com",
+  projectId: "coding-school-312d2",
+  storageBucket: "coding-school-312d2.appspot.com",
+  messagingSenderId: "813771540933",
+  appId: "1:813771540933:web:a0709a6895a42b0346a3ac"
+};
+
+
+const firebaseApp = initializeApp(firebaseConfig);
+
+
 const express= require('express')
 const app=express()
 const jwt= require('jsonwebtoken')
@@ -20,7 +37,17 @@ const verifytoken=(request,response,next) => {
 
     const accestoken=authHeader.slice('Bearer '.length)
     
-    jwt.verify(accestoken, 'my-secret',(error,payload) => {
+    
+
+    jwt.verify(accestoken, jwktopem({
+        "kty": "EC",
+        "use": "sig",
+        "crv": "P-521",
+        "kid": "my-key",
+        "x": "AFoh4YvVoAqsvjUp-G9LlR6byg2c6gfsvzzxVVsIVyfMti7juo6ysy1SI4w-x8fD0-P4D7M8LeQ5IxvdIAa5tv2X",
+        "y": "AfYB0IPs2pT7DuOY22Ql6pmKXMe4hlRbYGziaOIodrravamdFhi5y3xb6Ta4gri_f17nBbozPQ-EG7OrE9Xqe7F7",
+        "alg": "ES512"
+    }),(error,payload) => {
         
         if(error) return response.sendStatus(401)
 
@@ -50,16 +77,30 @@ app.post('/authenticate',(request, response)=>{
 
     const{ email }=request.body
     const { password }=request.body
+   
     
 
     const profile= profiles.find((p)=>p.email===email&&p.password===password)
     const role =profile.role
+
     console.log(role)
     console.log(profile)
 
+    
+
+   
     if(profile==null) return response.sendStatus(400)
    
-    const accestoken= jwt.sign({email,password,role},'my-secret')
+    const accestoken= jwt.sign({email,password,role},jwktopem({
+        "kty": "EC",
+        "d": "ANAWfLEI1tHGnRE3uMEyHQEtzq1yTPgpSB6m_K95RhyQV9hvBmpjJRweraOmtuCLeASjLeyStth9VpjMGqUIh5Ef",
+        "use": "sig",
+        "crv": "P-521",
+        "kid": "my-key",
+        "x": "AFoh4YvVoAqsvjUp-G9LlR6byg2c6gfsvzzxVVsIVyfMti7juo6ysy1SI4w-x8fD0-P4D7M8LeQ5IxvdIAa5tv2X",
+        "y": "AfYB0IPs2pT7DuOY22Ql6pmKXMe4hlRbYGziaOIodrravamdFhi5y3xb6Ta4gri_f17nBbozPQ-EG7OrE9Xqe7F7",
+        "alg": "ES512"
+    },{private:true}),{algorithm:"ES512"})
     response.json({accestoken})
 })
 

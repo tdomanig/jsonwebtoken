@@ -1,6 +1,8 @@
 
-import { initializeApp } from "firebase/app";
+
 const { initializeApp}=require("firebase/app") 
+const {getFirestore, getDocs,collection, addDoc} =require("firebase/firestore")
+const bcrypt = require("bcryptjs")
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4Fq5XmjVIK5jJ5VVDs3RqBePLmLcSeeg",
@@ -13,12 +15,14 @@ const firebaseConfig = {
 
 
 const firebaseApp = initializeApp(firebaseConfig);
+const db=getFirestore(firebaseApp)
 
 
 const express= require('express')
 const app=express()
 const jwt= require('jsonwebtoken')
-const jwktopem=require('jwk-to-pem')
+const jwktopem=require('jwk-to-pem');
+const res = require("express/lib/response");
 app.use(express.json())
 
 const profiles=[
@@ -28,6 +32,32 @@ const profiles=[
 {email: 'Suppenwürfel@bar.com', password:"456", name: 'Suppenwürfel',role: 'user'},
 {email: 'harder@bar.com', password:"789", name: 'Harder',role: 'user'},
 {email: 'mahlzeit@bar.com', password:"5932", name: 'Mahlzeit',role: 'user'}]
+
+app.get('/db',async(request,response)=>{
+    const snapshot =await getDocs(collection(db, 'profile'))
+    
+    snapshot.forEach((doc)=>{
+        console.log('doc.id',doc.id)
+    })
+    response.json(profiles)
+})
+
+app.post('/profile', async(request,response)=>{
+    const{email,password,name,role}=request.body
+    try{
+        const docRef=await addDoc(collection(db, 'profile'),{
+            name:name,
+            email:email,
+            password:bcrypt.hashSync(password),
+            role:role
+        })
+        
+        response.json({id:docRef.id})
+    }catch(e){
+        response.sendStatus(500)
+    }
+   
+})
 
 const verifytoken=(request,response,next) => {
 

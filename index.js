@@ -1,7 +1,7 @@
 const express= require('express')
 const app=express()
 const jwt= require('jsonwebtoken')
-
+const jwktopem=require('jwk-to-pem')
 app.use(express.json())
 
 const profiles=[
@@ -25,17 +25,15 @@ const verifytoken=(request,response,next) => {
         if(error) return response.sendStatus(401)
 
         request.user={email:payload.email}
-        
+        request.admin={role:payload.role}
         
         next()
     })
 }
 
 const isAdmin=(request,response,next) => {
-    const profile=profiles.find(({email})=>email===request.user.email)
-    console.log(profile)
-    request.admin=false
-    if(profile.role==="admin"){
+    
+    if(request.admin.role==="admin"){
         admin=true
     }else{admin=false}
     next()
@@ -53,15 +51,15 @@ app.post('/authenticate',(request, response)=>{
     const{ email }=request.body
     const { password }=request.body
     
-    console.log(email)
 
     const profile= profiles.find((p)=>p.email===email&&p.password===password)
-
+    const role =profile.role
+    console.log(role)
     console.log(profile)
 
     if(profile==null) return response.sendStatus(400)
    
-    const accestoken= jwt.sign({email,password},'my-secret')
+    const accestoken= jwt.sign({email,password,role},'my-secret')
     response.json({accestoken})
 })
 

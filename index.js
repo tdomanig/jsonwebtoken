@@ -24,11 +24,21 @@ const verifytoken=(request,response,next) => {
         
         if(error) return response.sendStatus(401)
 
-        request.email={email:payload.email}
-        request.password={password:payload.password}
+        request.user={email:payload.email}
+        
         
         next()
     })
+}
+
+const isAdmin=(request,response,next) => {
+    const profile=profiles.find(({email})=>email===request.user.email)
+    console.log(profile)
+    request.admin=false
+    if(profile.role==="admin"){
+        admin=true
+    }else{admin=false}
+    next()
 }
 
 app.get('/profile',verifytoken,(request, response)=>{
@@ -44,22 +54,29 @@ app.post('/authenticate',(request, response)=>{
     const { password }=request.body
     
     console.log(email)
+
     const profile= profiles.find((p)=>p.email===email&&p.password===password)
+
     console.log(profile)
 
     if(profile==null) return response.sendStatus(400)
    
-    
     const accestoken= jwt.sign({email,password},'my-secret')
     response.json({accestoken})
+})
 
+app.get('/admin',verifytoken,isAdmin,(request,response)=>{
+if(admin===true){
+    response.json(profiles)
+    console.log('geht')
+}else{
+    console.log('gehtnit')
+    response.sendStatus(403)
+}
+   
     
-    if(profile.role==="admin"){
-        console.log("Administrator logged in")
-        
-    }else{console.log("user logged in")}
-    
-    
+   
+  
 })
 
 app.listen(2000,()=>{console.log('running on port 2000')})
